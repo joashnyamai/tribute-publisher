@@ -2,19 +2,30 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Share2, Calendar, ArrowLeft } from 'lucide-react';
+import { Share2, Calendar, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getObituaryBySlug, Obituary } from '@/data/obituaries';
+import { getObituaryBySlug, Obituary, deleteObituary } from '@/data/obituaries';
 import { formatDate } from '@/utils/validation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ViewObituary = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [obituary, setObituary] = useState<Obituary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   useEffect(() => {
     if (slug) {
@@ -43,6 +54,18 @@ const ViewObituary = () => {
       // Fallback for browsers that don't support Web Share API
       navigator.clipboard.writeText(window.location.href);
       toast.success('Link copied to clipboard');
+    }
+  };
+
+  const handleDelete = () => {
+    if (slug) {
+      const success = deleteObituary(slug);
+      if (success) {
+        toast.success("Obituary deleted successfully");
+        navigate("/");
+      } else {
+        toast.error("Failed to delete obituary");
+      }
     }
   };
   
@@ -124,14 +147,25 @@ const ViewObituary = () => {
                 <span>{formatDate(obituary.dateOfBirth)} — {formatDate(obituary.dateOfDeath)}</span>
               </div>
               
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={handleShare}
-                className="text-memorial-600 hover:text-memorial-800 hover:bg-memorial-50"
-              >
-                <Share2 size={16} className="mr-2" /> Share
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleShare}
+                  className="text-memorial-600 hover:text-memorial-800 hover:bg-memorial-50"
+                >
+                  <Share2 size={16} className="mr-2" /> Share
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  <Trash2 size={16} className="mr-2" /> Delete
+                </Button>
+              </div>
             </div>
             
             <h1 className="font-serif text-3xl md:text-4xl text-memorial-900 mb-6">
@@ -174,6 +208,24 @@ const ViewObituary = () => {
       </main>
       
       <Footer />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this obituary?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the obituary
+              for {obituary.name} and remove the data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

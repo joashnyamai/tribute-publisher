@@ -69,3 +69,15 @@ export const addObituary = (obituary: Omit<Obituary, 'id' | 'submissionDate' | '
   
   return newObituary;
 };
+
+export const deleteObituary = (slug: string): boolean => {
+  const initialLength = obituaries.length;
+  const index = obituaries.findIndex(obituary => obituary.slug === slug);
+  
+  if (index !== -1) {
+    obituaries.splice(index, 1);
+    return true;
+  }
+  
+  return false;
+};
