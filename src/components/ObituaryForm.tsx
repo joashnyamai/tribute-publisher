@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { validateObituaryForm, ObituaryFormData } from '@/utils/validation';
 import { addObituary } from '@/data/obituaries';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const ObituaryForm = () => {
   const navigate = useNavigate();
